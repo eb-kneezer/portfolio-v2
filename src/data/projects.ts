@@ -25,7 +25,7 @@ export const projects: Project[] = [
     category: "Independent Product",
     summary:
       "A platform I'm building to make asking questions, sharing ideas, and participating in church discussions easier. From figuring out what to build to designing the experience and engineering the systems behind it.",
-    role: "Founder & engineer — independent",
+    role: "Builder — Independent",
     status: "WIP",
     tools: ["NestJS", "TanStack Start", "Resend", "Redis", "PostgreSQL"],
     selected: true,

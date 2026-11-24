@@ -1,0 +1,49 @@
+---
+import { Image } from "astro:assets";
+import { site } from "@/data/site";
+---
+
+<button
+  type="button"
+  aria-pressed="false"
+  aria-label="Show the First Ideal banner"
+  data-flip-avatar
+  class="avatar-flip-trigger relative block aspect-3/4 w-14 shrink-0 cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent sm:w-16"
+>
+  <span class="avatar-flip-card block size-full">
+    <span class="avatar-flip-face avatar-flip-front">
+      <Image
+        src={site.avatarSrc}
+        alt=""
+        width={64}
+        densities={[2, 3]}
+        loading="eager"
+        class="block size-full object-cover"
+      />
+    </span>
+    <span class="avatar-flip-face avatar-flip-back">
+      <Image
+        src={site.avatarBannerSrc}
+        alt=""
+        width={64}
+        densities={[2, 3]}
+        loading="eager"
+        class="block size-full object-cover"
+      />
+    </span>
+  </span>
+</button>
+<span role="status" class="sr-only" data-banner-text={site.avatarBannerText}></span>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>("[data-flip-avatar]");
+  const status = document.querySelector<HTMLElement>("[data-banner-text]");
+
+  if (button && status) {
+    button.addEventListener("click", () => {
+      const showBanner = button.getAttribute("aria-pressed") !== "true";
+      button.setAttribute("aria-pressed", String(showBanner));
+      status.textContent = showBanner ? (status.dataset["bannerText"] ?? "") : "";
+    });
+  }
+</script>

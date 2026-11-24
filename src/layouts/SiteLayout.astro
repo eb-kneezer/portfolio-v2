@@ -1,0 +1,54 @@
+---
+import SiteFooter from "@/components/site/SiteFooter.astro";
+import ThemeToggle from "@/components/site/ThemeToggle.astro";
+import { site } from "@/data/site";
+import "@fontsource-variable/hanken-grotesk/wght.css";
+import "@fontsource/instrument-serif/400.css";
+import "@/styles.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = `${site.name} — ${site.role}`, description = site.description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      let dark = matchMedia("(prefers-color-scheme: dark)").matches;
+      try {
+        const saved = localStorage.getItem("portfolio-theme");
+        if (saved === "light" || saved === "dark") dark = saved === "dark";
+      } catch {
+        // Use the system preference when storage is unavailable.
+      }
+      document.documentElement.classList.toggle("dark", dark);
+    </script>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <slot name="head" />
+  </head>
+  <body>
+    <div class="flex min-h-screen flex-col">
+      <a
+        href="#main"
+        class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:bg-card focus:px-3 focus:py-2"
+      >
+        Skip to content
+      </a>
+      <ThemeToggle />
+      <!-- Fragment links can move keyboard focus to this landmark. -->
+      <main id="main" tabindex="-1" class="flex-1">
+        <slot />
+      </main>
+      <SiteFooter />
+    </div>
+  </body>
+</html>

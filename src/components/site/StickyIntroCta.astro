@@ -1,0 +1,73 @@
+---
+import { Image } from "astro:assets";
+import calendlyIcon from "@/assets/calendly.svg";
+import { site } from "@/data/site";
+---
+
+<div data-cta-sentinel aria-hidden="true" class="mt-10 h-px"></div>
+<div class="intro-cta-sticky" data-docked="false">
+  <div class="intro-cta-card flex flex-col items-start gap-5 rounded-intro-cta border-hairline border-border bg-card px-5 py-5 shadow-intro-cta sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <p class="intro-cta-prompt display text-section-title sm:text-cta-title">
+      {site.introCta.prompt}
+    </p>
+    <a
+      href={site.introCta.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      class="intro-cta-link inline-flex min-h-10 max-w-full shrink-0 items-center justify-center gap-2 rounded-full bg-dot px-4 py-2 text-center text-sm font-semibold text-white hover:bg-dot-hover"
+    >
+      <Image
+        src={calendlyIcon}
+        alt=""
+        width={18}
+        loading="eager"
+        class="size-dot-icon shrink-0 brightness-0 invert"
+      />
+      <span class="wrap-anywhere">
+        {site.introCta.label} <span class="sr-only">Book a call on Calendly</span>
+      </span>
+    </a>
+  </div>
+</div>
+
+<script>
+  const sentinel = document.querySelector("[data-cta-sentinel]");
+  const sticky = document.querySelector<HTMLElement>(".intro-cta-sticky");
+  const card = sticky?.querySelector<HTMLElement>(".intro-cta-card");
+  const link = card?.querySelector<HTMLAnchorElement>(".intro-cta-link");
+
+  if (sentinel && sticky && card && link) {
+    const measure = () => {
+      const scaleX = (link.offsetWidth + 12) / card.offsetWidth;
+      const scaleY = (link.offsetHeight + 12) / card.offsetHeight;
+      const radius = (link.offsetHeight + 12) / 2;
+      const offsetX = (card.clientWidth - link.offsetWidth) / 2 - link.offsetLeft;
+      const offsetY = (card.clientHeight - link.offsetHeight) / 2 - link.offsetTop;
+
+      card.style.setProperty("--cta-scale-x", String(scaleX));
+      card.style.setProperty("--cta-scale-y", String(scaleY));
+      card.style.setProperty("--cta-unscale-x", String(1 / scaleX));
+      card.style.setProperty("--cta-unscale-y", String(1 / scaleY));
+      card.style.setProperty("--cta-offset-x", `${offsetX}px`);
+      card.style.setProperty("--cta-offset-y", `${offsetY}px`);
+      card.style.setProperty("--cta-radius-x", `${radius / scaleX}px`);
+      card.style.setProperty("--cta-radius-y", `${radius / scaleY}px`);
+    };
+
+    const resizeObserver = new ResizeObserver(measure);
+    resizeObserver.observe(card);
+    resizeObserver.observe(link);
+
+    const intersectionObserver = new IntersectionObserver(
+      ([entry]) => {
+        if (entry) {
+          sticky.dataset["docked"] = String(
+            !entry.isIntersecting && entry.boundingClientRect.top < 16,
+          );
+        }
+      },
+      { rootMargin: "-16px 0px 0px 0px" },
+    );
+    intersectionObserver.observe(sentinel);
+  }
+</script>

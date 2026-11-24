@@ -1,0 +1,29 @@
+---
+import { contactLinks } from "@/data/site";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<ul class:list={["flex flex-wrap gap-x-7 gap-y-2 text-copy", className]}>
+  {contactLinks.map((link) => (
+    <li>
+      <a
+        href={link.href}
+        target={link.external ? "_blank" : undefined}
+        rel={link.external ? "noopener noreferrer" : undefined}
+        class="inline-flex min-h-6 items-baseline gap-1 font-medium text-foreground underline underline-offset-4"
+      >
+        {link.label}
+        {link.external && (
+          <span aria-hidden="true" class="text-xs">
+            ↗
+          </span>
+        )}
+      </a>
+    </li>
+  ))}
+</ul>

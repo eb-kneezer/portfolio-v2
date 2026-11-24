@@ -1,0 +1,248 @@
+---
+import { Image } from "astro:assets";
+import { CircleDashed, Info } from "lucide-react";
+import ContactLinks from "@/components/site/ContactLinks.astro";
+import FlipAvatar from "@/components/site/FlipAvatar.astro";
+import StickyIntroCta from "@/components/site/StickyIntroCta.astro";
+import { experience } from "@/data/experience";
+import { projects } from "@/data/projects";
+import { site } from "@/data/site";
+import SiteLayout from "@/layouts/SiteLayout.astro";
+
+const selectedProjects = projects.filter((project) => project.selected);
+const title = `${site.name} — ${site.role}`;
+const origin = Astro.site ?? Astro.url;
+const url = new URL("/", origin).href;
+const image = new URL(site.shareImage.path, origin).href;
+---
+
+<SiteLayout title={title}>
+  <Fragment slot="head">
+    <link rel="canonical" href={url} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={site.description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content={String(site.shareImage.width)} />
+    <meta property="og:image:height" content={String(site.shareImage.height)} />
+    <meta property="og:image:alt" content={site.shareImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={site.description} />
+    <meta name="twitter:image" content={image} />
+    <meta name="twitter:image:alt" content={site.shareImage.alt} />
+  </Fragment>
+
+  <div class="reading-column pb-20 sm:pb-24">
+    <section id="intro" aria-labelledby="intro-h" class="pt-12 sm:pt-16">
+      <div class="flex items-center gap-3 sm:gap-4">
+        <FlipAvatar />
+        <div>
+          <h1 id="intro-h" class="display text-page-title sm:text-page-title-wide">
+            {site.name}
+          </h1>
+          <p class="mt-1 text-sm text-muted-foreground">{site.role}</p>
+        </div>
+      </div>
+      <div class="mt-8 space-y-5 text-copy leading-copy text-foreground">
+        <p>
+          I'm a people pleaser. My therapist says that's not always a good thing, but I like to
+          think it has its perks, especially when it comes to building things people love using.
+        </p>
+        <p>
+          I've gone from being an automotive mechanic trainee to teaching physics at a village
+          community college, to building software for tens of thousands of businesses at Moniepoint.
+        </p>
+        <p class="font-medium text-foreground">
+          Car owners happy. Students happy. End users happy. Everybody happy. At least, that's the
+          plan.
+        </p>
+      </div>
+    </section>
+
+    <StickyIntroCta />
+
+    <section
+      id="experience"
+      aria-labelledby="experience-h"
+      class="scroll-mt-24 mt-16 border-t border-border pt-10 sm:mt-20 sm:pt-12"
+    >
+      <h2 id="experience-h" class="display text-section-title sm:text-section-title-wide">
+        Experience
+      </h2>
+      <ol class="mt-7">
+        {experience.map((item) => (
+          <li class="border-b border-border py-7 first:pt-0 last:border-0 last:pb-0">
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+              <div class="flex items-center gap-2.5">
+                <Image
+                  src={item.logoSrc}
+                  alt=""
+                  width={24}
+                  {...(item.logoSrc.format === "svg" ? {} : { densities: [2, 3] })}
+                  loading={item.company === "Moniepoint" ? "eager" : "lazy"}
+                  class={`size-6 shrink-0 object-contain ${item.company === "Dot" ? "dark:invert" : ""}`}
+                />
+                <h3 class="display text-entry-title">{item.company}</h3>
+              </div>
+              <p class="shrink-0 text-sm text-muted-foreground">{item.period}</p>
+            </div>
+            <ul class="mt-2 space-y-0.5">
+              {item.roles.map((role) => (
+                <li class="text-sm text-muted-foreground">
+                  <span class="font-semibold text-foreground">{role.title}</span>
+                  {role.period !== item.period && <span> · {role.period}</span>}
+                </li>
+              ))}
+            </ul>
+            <div class="mt-4 space-y-3 text-copy leading-copy text-foreground/85">
+              {item.description.map((block) => (
+                <p>
+                  {block.parts.map((part) =>
+                    typeof part === "string" ? (
+                      part
+                    ) : part.type === "confetti" ? (
+                      <button
+                        type="button"
+                        aria-label={part.label}
+                        data-confetti
+                        class="inline cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      >
+                        {part.text}
+                      </button>
+                    ) : (
+                      <a
+                        href={part.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="group inline-flex max-w-full items-center gap-1 align-middle text-inline-link font-medium text-foreground focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                      >
+                        <span
+                          class="flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-md border border-border transition-colors group-hover:border-accent/40"
+                          style={
+                            part.type === "linkedLogo"
+                              ? { backgroundColor: part.iconBackground }
+                              : undefined
+                          }
+                        >
+                          {part.type === "linkedLogo" ? (
+                            <Image
+                              src={part.src}
+                              alt=""
+                              width={20}
+                              densities={[2, 3]}
+                              class="size-5 object-contain"
+                            />
+                          ) : (
+                            <Info size={16} aria-hidden="true" />
+                          )}
+                        </span>
+                        <span class="wrap-anywhere leading-inline-link underline underline-offset-4">
+                          {part.text}
+                        </span>
+                      </a>
+                    ),
+                  )}
+                </p>
+              ))}
+            </div>
+            <p class="mt-4 text-sm leading-copy text-muted-foreground">
+              <span class="font-medium text-foreground">Tools used:</span>{" "}
+              {item.technologies.join(", ")}
+            </p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section
+      id="work"
+      aria-labelledby="work-h"
+      class="scroll-mt-24 mt-16 border-t border-border pt-10 sm:mt-20 sm:pt-12"
+    >
+      <h2 id="work-h" class="display text-section-title sm:text-section-title-wide">
+        Selected Projects
+      </h2>
+      <ul class="mt-7">
+        {selectedProjects.map((project) => (
+          <li class="border-b border-border py-6 first:pt-0 last:border-0 last:pb-0">
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h3 class="display text-entry-title">{project.name}</h3>
+              {project.status && (
+                <span class="status-pending inline-flex items-center gap-1 text-xs font-medium leading-none">
+                  <CircleDashed size={12} aria-hidden="true" />
+                  {project.status}
+                </span>
+              )}
+            </div>
+            <p class="mt-1 text-sm font-semibold text-foreground">{project.role}</p>
+            <p class="text-sm text-muted-foreground">{project.category}</p>
+            <p class="mt-3 text-copy leading-copy text-foreground/85">{project.summary}</p>
+            {project.tools && project.tools.length > 0 && (
+              <p class="mt-4 text-sm leading-copy text-muted-foreground">
+                <span class="font-medium text-foreground">Tools used:</span>{" "}
+                {project.tools.join(", ")}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section
+      id="more"
+      aria-labelledby="more-h"
+      class="scroll-mt-24 mt-16 border-t border-border pt-10 sm:mt-20 sm:pt-12"
+    >
+      <h2 id="more-h" class="display text-section-title sm:text-section-title-wide">
+        Off the clock
+      </h2>
+      <h3 class="display mt-6 text-section-subtitle">A few more things</h3>
+      <div class="mt-4 space-y-4 text-copy leading-copy text-foreground/85">
+        <p>
+          When I'm not building software, I'm usually finding other ways to keep myself busy. I help
+          put together a monthly newsletter for my church, enjoy bringing people together, and
+          recently tried my hand at hosting an event. It went surprisingly well, so naturally, I'm
+          adding <strong class="font-semibold text-foreground">MC</strong> to my résumé.
+        </p>
+        <p>
+          Beyond that, I'm a big fan of good music, great conversations, and even better food.
+          Preferably all three at once.
+        </p>
+      </div>
+    </section>
+
+    <section
+      id="contact"
+      aria-labelledby="contact-h"
+      class="scroll-mt-24 mt-16 border-t border-border pt-10 sm:mt-20 sm:pt-12"
+    >
+      <h2 id="contact-h" class="display text-section-title sm:text-section-title-wide">
+        Elsewhere
+      </h2>
+      <ContactLinks class="mt-5" />
+    </section>
+  </div>
+</SiteLayout>
+
+<script>
+  import confetti from "@hiseb/confetti";
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-confetti]")) {
+    button.addEventListener("click", () => {
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const { left, top, width, height } = button.getBoundingClientRect();
+      confetti({
+        position: { x: left + width / 2, y: top + height / 2 },
+        count: 50,
+        size: 0.8,
+        velocity: 160,
+        fade: true,
+        color: ["#a51c51", "#4b1f4c", "#6450a4"],
+      });
+    });
+  }
+</script>

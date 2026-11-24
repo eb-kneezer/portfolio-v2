@@ -1,0 +1,134 @@
+---
+import { Moon, Sun, SunMoon } from "lucide-react";
+---
+
+<button
+  type="button"
+  aria-label="Switch to dark mode"
+  title="Dark mode"
+  data-theme-toggle
+  class="theme-toggle fixed right-4 top-4 z-50 inline-flex size-10 items-center justify-center rounded-full border border-border bg-card text-foreground shadow-sm transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+>
+  <span data-theme-icon="system">
+    <SunMoon size={18} aria-hidden="true" />
+  </span>
+  <span data-theme-icon="dark" hidden>
+    <Sun size={18} aria-hidden="true" />
+  </span>
+  <span data-theme-icon="light" hidden>
+    <Moon size={18} aria-hidden="true" />
+  </span>
+</button>
+
+<script>
+  type Theme = "light" | "dark";
+  const storageKey = "portfolio-theme";
+  const root = document.documentElement;
+  const toggleButton = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
+
+  function savedTheme(): Theme | null {
+    try {
+      const value = localStorage.getItem(storageKey);
+      return value === "light" || value === "dark" ? value : null;
+    } catch {
+      return null;
+    }
+  }
+
+  if (toggleButton) {
+    const icons = toggleButton.querySelectorAll<HTMLElement>("[data-theme-icon]");
+    const preference = matchMedia("(prefers-color-scheme: dark)");
+    const setTheme = (theme: Theme) => {
+      const dark = theme === "dark";
+      root.classList.toggle("dark", dark);
+      toggleButton.setAttribute(
+        "aria-label",
+        dark ? "Switch to light mode" : "Switch to dark mode",
+      );
+      toggleButton.title = dark ? "Light mode" : "Dark mode";
+      for (const icon of icons) icon.hidden = icon.dataset["themeIcon"] !== theme;
+    };
+    const sync = () => setTheme(savedTheme() ?? (preference.matches ? "dark" : "light"));
+
+    sync();
+    preference.addEventListener("change", sync);
+    window.addEventListener("storage", sync);
+
+    toggleButton.addEventListener("click", () => {
+      const button = toggleButton.getBoundingClientRect();
+      const originX = button.left + button.width / 2;
+      const originY = button.top + button.height / 2;
+      const endRadius = Math.hypot(
+        Math.max(originX, window.innerWidth - originX),
+        Math.max(originY, window.innerHeight - originY),
+      );
+      const next = document.documentElement.classList.contains("dark") ? "light" : "dark";
+      try {
+        window.localStorage.setItem(storageKey, next);
+      } catch {
+        // The switch still works for this page when storage is unavailable.
+      }
+      const applyTheme = () => {
+        setTheme(next);
+      };
+
+      const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (!document.startViewTransition || reduceMotion) {
+        applyTheme();
+        if (!reduceMotion) {
+          toggleButton.animate(
+            { transform: [next === "dark" ? "rotate(24deg)" : "rotate(-24deg)", "rotate(0deg)"] },
+            { duration: 240, easing: getComputedStyle(root).getPropertyValue("--ease-out").trim() },
+          );
+        }
+        return;
+      }
+
+      const transition = document.startViewTransition(() => {
+        root.classList.add("theme-switching");
+        applyTheme();
+      });
+
+      transition.ready
+        .then(() => {
+          root.animate(
+            {
+              clipPath:
+                next === "dark"
+                  ? [
+                      `circle(0px at ${originX}px ${originY}px)`,
+                      `circle(${endRadius}px at ${originX}px ${originY}px)`,
+                    ]
+                  : [
+                      `circle(${endRadius}px at ${originX}px ${originY}px)`,
+                      `circle(0px at ${originX}px ${originY}px)`,
+                    ],
+            },
+            {
+              duration: 500,
+              easing: getComputedStyle(root).getPropertyValue("--ease-in-out").trim(),
+              fill: "forwards",
+              pseudoElement:
+                next === "dark" ? "::view-transition-new(root)" : "::view-transition-old(root)",
+            },
+          );
+          root.animate(
+            {
+              transform: [next === "dark" ? "rotate(24deg)" : "rotate(-24deg)", "rotate(0deg)"],
+              opacity: [0.8, 1],
+            },
+            {
+              duration: 240,
+              easing: getComputedStyle(root).getPropertyValue("--ease-out").trim(),
+              fill: "forwards",
+              pseudoElement: "::view-transition-new(theme-toggle)",
+            },
+          );
+        })
+        .catch(() => {});
+
+      const finish = () => root.classList.remove("theme-switching");
+      transition.finished.then(finish, finish);
+    });
+  }
+</script>
